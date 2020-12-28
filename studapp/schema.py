@@ -10,10 +10,15 @@ class StudType(DjangoObjectType):
 		model = models.Stud
 
 class Query(graphene.ObjectType):
-
-	studs = graphene.List(StudType)
-	def resolve_studs(self, info):
-		return models.Stud.objects.all()
+    studs = graphene.List(StudType)
+    edit = graphene.Field(StudType, id=graphene.Int())
+    delete = graphene.Field(StudType, id=graphene.Int())
+    def resolve_studs(self, info):
+        return models.Stud.objects.all()
+    def resolve_edit(self, info,id):
+        return models.Stud.objects.get(pk=id)
+    def resolve_delete(self, info,id):
+        return models.Stud.objects.get(pk=id)
 
 
 class CreateStud(graphene.Mutation):
@@ -21,7 +26,6 @@ class CreateStud(graphene.Mutation):
     name = graphene.String()
     age = graphene.Int()
     file = graphene.String()
-    # file = graphene.String()
     class Arguments:
         name = graphene.String()
         age = graphene.Int()
@@ -36,27 +40,49 @@ class CreateStud(graphene.Mutation):
         stud.save()
         return CreateStud(stud=stud)
 
-   
-# class UploadFile(graphene.ClientIDMutation):
-#     class Input:
-#         pass
-#         # nothing needed for uploading file
+class EditStud(graphene.Mutation):
+    id = graphene.ID()
+    name = graphene.String()
+    age = graphene.Int()
+    file = graphene.String()
+    class Arguments:
+        id = graphene.ID(required=True)
+        name = graphene.String()
+        age = graphene.Int()
+        graphene.types.datetime.Date()
+        file = Upload()
 
-#     # your return fields
-#     file = graphene.String()
-#     success = graphene.String()
-#     @classmethod
-#     def mutate_and_get_payload(cls, root, info, **input):
-#         # When using it in Django, context will be the request
-#         files = info.context.FILES
-#         # Or, if used in Flask, context will be the flask global request
-#         # files = context.files
+    stud = graphene.Field(StudType)
+    @staticmethod
+    def mutate(root, info,id,file = None, name=None, age=None):
+        stud = models.Stud.objects.get(pk=id)
+        if name != None :
+            stud.name = name
+        if age != None :
+            stud.age = age
+        if file != None :
+            print(file)
+            stud.file = file
+            print(stud.file)
+        stud.save()
+        return EditStud(stud=stud)
 
-#         # do something with files
+class DeleteStud(graphene.Mutation):
+    id = graphene.ID()
+    class Arguments:
+        id = graphene.ID(required=True)
 
-#         return UploadFile(success=True)
+    stud = graphene.Field(StudType)
+    @staticmethod
+    def mutate(root, info,id):
+        stud = models.Stud.objects.get(pk=id)
+        print(stud)
+        stud.delete()
+        return DeleteStud(stud=stud)
+
 class Mutation(graphene.ObjectType):
     create_Stud = CreateStud.Field()
-
+    edit_Stud = EditStud.Field()
+    delete_Stud = DeleteStud.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
