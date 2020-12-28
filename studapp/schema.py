@@ -20,19 +20,19 @@ class CreateStud(graphene.Mutation):
     id = graphene.ID()
     name = graphene.String()
     age = graphene.Int()
-    # file = graphene.String()
+    file = graphene.String()
     # file = graphene.String()
     class Arguments:
         name = graphene.String()
         age = graphene.Int()
         graphene.types.datetime.Date()
-        # file = Upload(required=True)
+        file = Upload(required=True)
 
     stud = graphene.Field(StudType)
 
     @staticmethod
     def mutate(root, info, name, age):
-        stud = models.Stud(name=name, age=age)
+        stud = models.Stud(name=name, age=age,file=file)
         stud.save()
         return CreateStud(stud=stud)
 
