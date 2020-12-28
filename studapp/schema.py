@@ -31,7 +31,7 @@ class CreateStud(graphene.Mutation):
     stud = graphene.Field(StudType)
 
     @staticmethod
-    def mutate(root, info, name, age):
+    def mutate(root, info, name, age,file):
         stud = models.Stud(name=name, age=age,file=file)
         stud.save()
         return CreateStud(stud=stud)
